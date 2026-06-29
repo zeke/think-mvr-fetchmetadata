@@ -4,6 +4,8 @@ Minimum viable reproduction for a bug in `@cloudflare/think` where `serializable
 
 Related issue: https://github.com/cloudflare/agents/issues/1833
 
+**Status: confirmed present in `@cloudflare/think` 0.11.1** (latest as of 2026-06-29).
+
 ## The bug
 
 The Telegram adapter stores the photo `file_id` exclusively in `fetchMetadata.fileId` on each attachment. When using a conversation resolver that routes to a sub-agent DO, `serializableMessengerEvent()` serializes the event for storage and cross-DO transmission. This function keeps only `id`, `mediaType`, `name`, `size`, `text`, and `url` from each attachment — dropping `fetchMetadata`, `raw`, and `fetch`.
@@ -11,6 +13,31 @@ The Telegram adapter stores the photo `file_id` exclusively in `fetchMetadata.fi
 For Telegram photos:
 - The top-level `id` field is not set (file_id is only in `fetchMetadata`)
 - After serialization, there is no way to identify or retrieve the photo from within the sub-agent
+
+The relevant code in `@cloudflare/think` 0.11.1:
+
+```js
+// chat-sdk-D6cUghsQ.js
+function serializableMessengerEvent(event) {
+  return {
+    // ...
+    message: event.message ? {
+      attachments: event.message.attachments.map((attachment) => ({
+        id: attachment.id,       // undefined for Telegram photos
+        mediaType: attachment.mediaType,
+        name: attachment.name,
+        size: attachment.size,
+        text: attachment.text,
+        url: attachment.url
+        // fetchMetadata: dropped
+        // raw: dropped
+        // fetch: dropped
+      })),
+      // ...
+    } : void 0,
+  };
+}
+```
 
 ## Reproduction
 
@@ -41,10 +68,12 @@ For Telegram photos:
 
 Intercept the raw platform webhook before it reaches the Think framework, extract the file identifier from the raw payload, and inject it into the message text so it survives serialization.
 
-See the workaround implemented in `src/index.ts` of https://github.com/zeke/djikibot for the Telegram-specific version.
+See `workaround/index.ts` in this repo for the Telegram-specific implementation.
 
 ## Environment
 
-- `@cloudflare/think`: see `package.json`
-- `@chat-adapter/telegram`: see `package.json`
+- `@cloudflare/think`: 0.11.1
+- `@chat-adapter/telegram`: 4.31.0
+- `agents`: 0.17.1
+- `wrangler`: 4.105.0
 - Runtime: Cloudflare Workers + Durable Objects
