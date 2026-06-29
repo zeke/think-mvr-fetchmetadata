@@ -2,7 +2,7 @@
 
 Minimum viable reproduction for a bug in `@cloudflare/think` where `serializableMessengerEvent` strips `fetchMetadata` (and `raw`) from messenger event attachments before passing them to sub-agent Durable Objects.
 
-Related issue: https://github.com/cloudflare/agents/issues/TODO
+Related issue: https://github.com/cloudflare/agents/issues/1833
 
 ## The bug
 
