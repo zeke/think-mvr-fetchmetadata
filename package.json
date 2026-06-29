@@ -1,0 +1,20 @@
+{
+  "name": "think-mvr-fetchmetadata",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev --tunnel",
+    "cf-typegen": "wrangler types"
+  },
+  "devDependencies": {
+    "wrangler": "^4.98.0"
+  },
+  "dependencies": {
+    "@chat-adapter/telegram": "^4.30.0",
+    "@cloudflare/think": "^0.8.7",
+    "agents": "^0.14.5",
+    "workers-ai-provider": "^3.1.14",
+    "zod": "^4.4.3"
+  }
+}
